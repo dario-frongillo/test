@@ -1,6 +1,8 @@
 package it.italiancoders.mybudget;
 
 import it.italiancoders.mybudget.dao.test.TestDao;
+import it.italiancoders.mybudget.dao.user.UserDao;
+import it.italiancoders.mybudget.model.api.User;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -34,10 +36,9 @@ public class MyBudgetApplication {
 	}
 
 	@Bean
-	public CommandLineRunner loadData(TestDao testDao) {
+	public CommandLineRunner loadData(UserDao testDao) {
 		return (args) -> {
-			Map<String, Object> ret = testDao.findTest(new HashMap<>());
-			System.out.println("ciao");
+			User ret = testDao.findByUsernameCaseInsensitive("admin");
 		};
 	}
 }
