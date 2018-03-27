@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Builder(builderMethodName = "newBuilder")
-@NoArgsConstructor
 @Data
 public class JwtAuthenticationRequest {
 

@@ -5,20 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import it.italiancoders.jwt.security.dto.JwtUser;
+import it.italiancoders.mybudget.model.api.GenderEnum;
+import it.italiancoders.mybudget.model.api.SocialTypeEnum;
+import it.italiancoders.mybudget.model.api.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mobile.device.Device;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenUtil implements Serializable {
@@ -26,10 +25,13 @@ public class JwtTokenUtil implements Serializable {
     private static final long serialVersionUID = -3301605591108950415L;
 
     static final String CLAIM_KEY_USERNAME = "sub";
-    static final String CLAIM_KEY_AUDIENCE = "audience";
     static final String CLAIM_KEY_CREATED = "iat";
-    static final String CLAIM_KEY_AUTHORITIES = "roles";
-    static final String CLAIM_KEY_IS_ENABLED = "isEnabled";
+    static final String CLAIM_KEY_EMAIL = "email";
+    static final String CLAIM_KEY_GENDER = "gender";
+    static final String CLAIM_KEY_FIRSTNAME = "given_name";
+    static final String CLAIM_KEY_LASTNAME = "family_name";
+    static final String CLAIM_KEY_ALIAS = "nickname";
+    static final String CLAIM_KEY_SOCIAL_TYPE = "social";
 
 
 
@@ -53,24 +55,36 @@ public class JwtTokenUtil implements Serializable {
         return username;
     }
 
-    public JwtUser getUserDetails(String token) {
+    public User getUserDetails(String token) {
 
-        if(token == null){
+        if(StringUtils.isEmpty(token)){
             return null;
         }
         try {
             final Claims claims = getClaimsFromToken(token);
-            List<SimpleGrantedAuthority> authorities = null;
-            if (claims.get(CLAIM_KEY_AUTHORITIES) != null) {
-                authorities = ((List<String>) claims.get(CLAIM_KEY_AUTHORITIES)).stream().map(role-> new SimpleGrantedAuthority(role)).collect(Collectors.toList());
+
+            String username = claims.getSubject();
+            String email = (String) claims.get(CLAIM_KEY_EMAIL);
+            String firstname = (String) claims.get(CLAIM_KEY_FIRSTNAME);
+            String lastname = (String) claims.get(CLAIM_KEY_LASTNAME);
+            String alias = (String) claims.get(CLAIM_KEY_ALIAS);
+            Integer socialType= (Integer) claims.get(CLAIM_KEY_SOCIAL_TYPE);
+            Integer gender= (Integer) claims.get(CLAIM_KEY_GENDER);
+
+            if(StringUtils.isEmpty(username)){
+                return null;
             }
 
-            return new JwtUser(
-                    claims.getSubject(),
-                    "",
-                    authorities,
-                    (boolean) claims.get(CLAIM_KEY_IS_ENABLED)
-            );
+            return User.newBuilder()
+                        .username(username)
+                        .email(email)
+                        .alias(alias)
+                        .firstname(firstname)
+                        .lastname(lastname)
+                        .socialType(socialType == null ? null : SocialTypeEnum.values()[socialType])
+                        .gender(gender == null ? null : GenderEnum.values()[gender])
+                        .build();
+
         } catch (Exception e) {
             return null;
         }
@@ -99,16 +113,6 @@ public class JwtTokenUtil implements Serializable {
         return expiration;
     }
 
-    public String getAudienceFromToken(String token) {
-        String audience;
-        try {
-            final Claims claims = getClaimsFromToken(token);
-            audience = (String) claims.get(CLAIM_KEY_AUDIENCE);
-        } catch (Exception e) {
-            audience = null;
-        }
-        return audience;
-    }
 
     private Claims getClaimsFromToken(String token) {
         Claims claims;
@@ -132,38 +136,22 @@ public class JwtTokenUtil implements Serializable {
         return expiration.before(new Date());
     }
 
-    private String generateAudience(Device device) {
-        String audience = AUDIENCE_UNKNOWN;
-        if (device.isNormal()) {
-            audience = AUDIENCE_WEB;
-        } else if (device.isTablet()) {
-            audience = AUDIENCE_TABLET;
-        } else if (device.isMobile()) {
-            audience = AUDIENCE_MOBILE;
-        }
-        return audience;
-    }
+    public String generateToken(UserDetails userDetails) throws JsonProcessingException {
+        User currentUser = (User) userDetails;
 
-    private Boolean ignoreTokenExpiration(String token) {
-        String audience = getAudienceFromToken(token);
-        return (AUDIENCE_TABLET.equals(audience) || AUDIENCE_MOBILE.equals(audience));
-    }
-
-    public String generateToken(UserDetails userDetails, Device device) throws JsonProcessingException {
         Map<String, Object> claims = new HashMap<>();
-        claims.put(CLAIM_KEY_USERNAME, userDetails.getUsername());
-        claims.put(CLAIM_KEY_AUDIENCE, generateAudience(device));
+        claims.put(CLAIM_KEY_USERNAME, currentUser.getUsername());
+        claims.put(CLAIM_KEY_EMAIL, currentUser.getEmail());
+        claims.put(CLAIM_KEY_FIRSTNAME, currentUser.getFirstname());
+        claims.put(CLAIM_KEY_LASTNAME, currentUser.getLastname());
+        claims.put(CLAIM_KEY_ALIAS, currentUser.getAlias());
+        claims.put(CLAIM_KEY_SOCIAL_TYPE, currentUser.getSocialType() == null ? null : currentUser.getSocialType().getValue());
+        claims.put(CLAIM_KEY_GENDER, currentUser.getGender() == null ? null :currentUser.getGender().getValue());
         claims.put(CLAIM_KEY_CREATED, new Date());
-        List<String> auth =userDetails.getAuthorities().stream().map(role-> role.getAuthority()).collect(Collectors.toList());
-        claims.put(CLAIM_KEY_AUTHORITIES, auth);
-        claims.put(CLAIM_KEY_IS_ENABLED,userDetails.isEnabled());
-
         return generateToken(claims);
     }
 
-    String generateToken(Map<String, Object> claims) {
-        ObjectMapper mapper = new ObjectMapper();
-
+    public String generateToken(Map<String, Object> claims) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setExpiration(generateExpirationDate())
@@ -173,7 +161,7 @@ public class JwtTokenUtil implements Serializable {
 
     public Boolean canTokenBeRefreshed(String token) {
         final Date created = getCreatedDateFromToken(token);
-        return  (!isTokenExpired(token) || ignoreTokenExpiration(token));
+        return  (!isTokenExpired(token));
     }
 
     public String refreshToken(String token) {
@@ -189,7 +177,7 @@ public class JwtTokenUtil implements Serializable {
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
-        JwtUser user = (JwtUser) userDetails;
+        User user = (User) userDetails;
         final String username = getUsernameFromToken(token);
         return (
                 username.equals(user.getUsername())

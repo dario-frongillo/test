@@ -1,0 +1,39 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="it.italiancoders.mybudget.dao.User">
+
+    <resultMap id="userMap" type="it.italiancoders.mybudget.model.api.User">
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <result property="firstname" column="firstname"/>
+        <result property="lastname" column="lastname"/>
+        <result property="alias" column="alias"/>
+        <result property="socialType" column="socialType" javaType="it.italiancoders.mybudget.model.api.SocialTypeEnum" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result property="gender" column="gender" javaType="it.italiancoders.mybudget.model.api.GenderEnum" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+
+    </resultMap>
+
+
+    <select id="findUsers" resultMap="userMap">
+        select USERNAME AS username,
+               PASSWORD AS password,
+               EMAIL AS email,
+               FIRSTNAME AS firstname,
+               LASTNAME AS  lastname,
+               ALIAS AS alias,
+               SOCIALTYPE AS socialType,
+               GENDER as gender
+          from PUBLIC.USERS
+        <where>
+            1 = 1
+            <if test="username != null">
+                AND LOWER (USERNAME)= LOWER(#{username})
+            </if>
+
+        </where>
+
+    </select>
+
+</mapper>

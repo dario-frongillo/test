@@ -2,9 +2,7 @@ package it.italiancoders.mybudget.model.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.Email;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,8 +12,9 @@ import javax.validation.constraints.Size;
 import java.util.Collection;
 
 @Builder(builderMethodName = "newBuilder")
-@NoArgsConstructor
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
 public class User implements UserDetails {
 
     @Size(min = 4, max = 100)
@@ -42,30 +41,40 @@ public class User implements UserDetails {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private GenderEnum gender;
 
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private SocialTypeEnum socialType;
 
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
+
+    public User (){}
+
+
 }
