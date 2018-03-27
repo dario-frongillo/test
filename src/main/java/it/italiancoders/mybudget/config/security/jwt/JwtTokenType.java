@@ -1,4 +1,4 @@
-package it.italiancoders.mybudget.model.api;
+package it.italiancoders.mybudget.config.security.jwt;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -7,9 +7,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * 
    Svn revision:1530
  */
-public enum GenderEnum {
+public enum JwtTokenType {
 
-  Male(0), Female(1), Others(2);
+  AccessToken(0),
+
+  RefreshToken(1);
 
   private Integer value;
 
@@ -18,7 +20,7 @@ public enum GenderEnum {
       return value;
   }
 
-  GenderEnum(Integer value) {
+  JwtTokenType(Integer value) {
     this.value = value;
   }
 
@@ -28,15 +30,13 @@ public enum GenderEnum {
   }
 
   @JsonCreator
-  public static GenderEnum fromValue(String text) {
-    for (GenderEnum b : GenderEnum.values()) {
+  public static JwtTokenType fromValue(String text) {
+    for (JwtTokenType b : JwtTokenType.values()) {
       if (String.valueOf(b.value).equals(text)) {
         return b;
       }
     }
     return null;
   }
-
-
 }
 

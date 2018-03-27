@@ -14,6 +14,19 @@ import java.util.Map;
 @Repository
 public class UserDaoImpl extends SqlSessionDaoSupport implements UserDao {
 
+    private Map<String, Object> toHashMap(User user){
+        Map<String,Object> params = new HashMap<>();
+        params.put("username", user.getUsername());
+        params.put("password", user.getPassword());
+        params.put("email", user.getEmail());
+        params.put("firstname", user.getFirstname());
+        params.put("lastname", user.getLastname());
+        params.put("alias", user.getAlias());
+        params.put("gender", user.getGender() == null ? null : user.getGender().getValue());
+        params.put("socialType", user.getSocialType() == null ? null : user.getSocialType().getValue());
+        return params;
+    }
+
 
     @Override
     @Autowired
@@ -28,6 +41,20 @@ public class UserDaoImpl extends SqlSessionDaoSupport implements UserDao {
         params.put("username", username);
 
         return getSqlSession().selectOne("it.italiancoders.mybudget.dao.User.findUsers",params);
+
+    }
+
+    @Override
+    public Integer updateUser(User user) {
+        Map<String,Object> params = toHashMap(user);
+
+        return getSqlSession().update("it.italiancoders.mybudget.dao.User.updateUsers",params);
+    }
+
+    @Override
+    public void insertUser(User user) {
+        Map<String,Object> params = toHashMap(user);
+        getSqlSession().insert("it.italiancoders.mybudget.dao.User.insertUser", params);
 
     }
 }

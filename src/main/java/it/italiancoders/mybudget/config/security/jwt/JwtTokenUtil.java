@@ -32,6 +32,7 @@ public class JwtTokenUtil implements Serializable {
     static final String CLAIM_KEY_LASTNAME = "family_name";
     static final String CLAIM_KEY_ALIAS = "nickname";
     static final String CLAIM_KEY_SOCIAL_TYPE = "social";
+    static final String CLAIM_KEY_TOKEN_TYPE = "tokenType";
 
 
 
@@ -41,8 +42,11 @@ public class JwtTokenUtil implements Serializable {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Value("${jwt.expiration}")
-    private Long expiration;
+    @Value("${jwt.accessTokenExpiration}")
+    private Long accessTokenExp;
+
+    @Value("${jwt.refreshTokenExpiration}")
+    private Long refreshTokenExpiration;
 
     public String getUsernameFromToken(String token) {
         String username;
@@ -127,8 +131,9 @@ public class JwtTokenUtil implements Serializable {
         return claims;
     }
 
-    private Date generateExpirationDate() {
-        return new Date(System.currentTimeMillis() + expiration * 1000);
+    private Date generateExpirationDate(JwtTokenType jwtTokenType) {
+        Long exp = jwtTokenType == JwtTokenType.AccessToken ? accessTokenExp : refreshTokenExpiration;
+        return new Date(System.currentTimeMillis() + exp * 1000);
     }
 
     private Boolean isTokenExpired(String token) {
@@ -136,7 +141,7 @@ public class JwtTokenUtil implements Serializable {
         return expiration.before(new Date());
     }
 
-    public String generateToken(UserDetails userDetails) throws JsonProcessingException {
+    public String generateToken(UserDetails userDetails, JwtTokenType jwtTokenType) throws JsonProcessingException {
         User currentUser = (User) userDetails;
 
         Map<String, Object> claims = new HashMap<>();
@@ -147,14 +152,15 @@ public class JwtTokenUtil implements Serializable {
         claims.put(CLAIM_KEY_ALIAS, currentUser.getAlias());
         claims.put(CLAIM_KEY_SOCIAL_TYPE, currentUser.getSocialType() == null ? null : currentUser.getSocialType().getValue());
         claims.put(CLAIM_KEY_GENDER, currentUser.getGender() == null ? null :currentUser.getGender().getValue());
+        claims.put(CLAIM_KEY_TOKEN_TYPE, jwtTokenType);
         claims.put(CLAIM_KEY_CREATED, new Date());
-        return generateToken(claims);
+        return generateToken(claims, jwtTokenType);
     }
 
-    public String generateToken(Map<String, Object> claims) {
+    public String generateToken(Map<String, Object> claims, JwtTokenType jwtTokenType) {
         return Jwts.builder()
                 .setClaims(claims)
-                .setExpiration(generateExpirationDate())
+                .setExpiration(generateExpirationDate(jwtTokenType))
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
     }
@@ -169,7 +175,7 @@ public class JwtTokenUtil implements Serializable {
         try {
             final Claims claims = getClaimsFromToken(token);
             claims.put(CLAIM_KEY_CREATED, new Date());
-            refreshedToken = generateToken(claims);
+            refreshedToken = generateToken(claims, JwtTokenType.AccessToken);
         } catch (Exception e) {
             refreshedToken = null;
         }

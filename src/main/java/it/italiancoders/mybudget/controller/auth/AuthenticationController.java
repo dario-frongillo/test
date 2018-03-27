@@ -1,10 +1,13 @@
 package it.italiancoders.mybudget.controller.auth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import it.italiancoders.mybudget.config.security.jwt.JwtTokenType;
 import it.italiancoders.mybudget.config.security.jwt.JwtTokenUtil;
 import it.italiancoders.mybudget.model.api.JwtAuthenticationRequest;
 import it.italiancoders.mybudget.model.api.JwtAuthenticationResponse;
+import it.italiancoders.mybudget.model.api.SocialTypeEnum;
 import it.italiancoders.mybudget.model.api.User;
+import it.italiancoders.mybudget.service.social.SocialManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +41,15 @@ public class AuthenticationController {
     @Autowired
     private UserDetailsService userDetailsService;
 
-    @RequestMapping(value = "public/login", method = RequestMethod.POST)
+    @Autowired
+    private SocialManager socialManager;
+
+    @RequestMapping(value = "public/v1/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest, HttpServletResponse response) throws AuthenticationException, JsonProcessingException {
+
+        if(authenticationRequest != null && authenticationRequest.getSocialAuthenticationType() != null && authenticationRequest.getSocialAuthenticationType()!= SocialTypeEnum.None){
+            socialManager.updInsSocialUser(authenticationRequest.getSocialAuthenticationType(), authenticationRequest.getUsername(), authenticationRequest.getSocialAccessToken());
+        }
 
         // Effettuo l autenticazione
         final Authentication authentication = authenticationManager.authenticate(
@@ -52,10 +62,11 @@ public class AuthenticationController {
 
         // Genero Token
         final UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        final String token = jwtTokenUtil.generateToken(userDetails);
-        response.setHeader(tokenHeader,token);
+        final String accessToken = jwtTokenUtil.generateToken(userDetails, JwtTokenType.AccessToken);
+        final String refreshToken = jwtTokenUtil.generateToken(userDetails, JwtTokenType.RefreshToken);
+        response.setHeader(tokenHeader,accessToken);
         // Ritorno il token
-        return ResponseEntity.ok(JwtAuthenticationResponse.newBuilder().user((User) userDetails).build());
+        return ResponseEntity.ok(JwtAuthenticationResponse.newBuilder().user((User) userDetails).refreshToken(refreshToken).build());
     }
 
     @RequestMapping(value = "protected/refresh-token", method = RequestMethod.GET)

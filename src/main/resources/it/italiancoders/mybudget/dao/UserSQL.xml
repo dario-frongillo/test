@@ -36,4 +36,22 @@
 
     </select>
 
+    <update id="updateUsers" >
+        UPDATE  PUBLIC.USERS
+           SET  EMAIL = LOWER(#{email}),
+                FIRSTNAME = #{firstname},
+                LASTNAME  = #{lastname},
+                ALIAS =  #{alias},
+                GENDER =  #{gender},
+                SOCIALTYPE =  #{socialType}
+        WHERE   LOWER (USERNAME)= LOWER(#{username})
+    </update>
+
+    <insert id="insertUser" >
+        INSERT INTO  PUBLIC.USERS
+          (USERNAME, PASSWORD, EMAIL, FIRSTNAME, LASTNAME, ALIAS, SOCIALTYPE, GENDER)
+        VALUES
+          (#{username}, #{password},#{email},#{firstname},#{lastname},#{alias},#{socialType},#{gender})
+    </insert>
+
 </mapper>
