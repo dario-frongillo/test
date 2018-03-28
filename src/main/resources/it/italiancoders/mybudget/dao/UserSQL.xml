@@ -54,4 +54,18 @@
           (#{username}, #{password},#{email},#{firstname},#{lastname},#{alias},#{socialType},#{gender})
     </insert>
 
+    <select id="checkIfExist" resultType="java.lang.Integer">
+        select count(*)
+        from PUBLIC.USERS
+        <where>
+            <if test="email != null">
+                AND LOWER (email)= LOWER(#{email})
+            </if>
+            <if test="username != null">
+                AND LOWER (username)= LOWER(#{username})
+            </if>
+
+        </where>
+
+    </select>
 </mapper>

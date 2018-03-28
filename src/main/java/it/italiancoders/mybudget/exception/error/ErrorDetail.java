@@ -9,7 +9,7 @@ public class ErrorDetail {
 
     private String title;
 
-    private int status;
+    private int subcode;
 
     private String detail;
 
@@ -33,11 +33,11 @@ public class ErrorDetail {
     public void setTitle(String title) {
         this.title = title;
     }
-    public int getStatus() {
-        return status;
+    public int getSubcode() {
+        return subcode;
     }
-    public void setStatus(int status) {
-        this.status = status;
+    public void setSubcode(int subcode) {
+        this.subcode = subcode;
     }
     public String getDetail() {
         return detail;
@@ -156,7 +156,7 @@ public class ErrorDetail {
         public ErrorDetail build() {
             ErrorDetail errorDetail = new ErrorDetail();
             errorDetail.setTitle(title);
-            errorDetail.setStatus(status);
+            errorDetail.setSubcode(status);
             errorDetail.setDetail(detail);
             errorDetail.setTimeStamp(timeStamp);
             errorDetail.setDeveloperMessage(developerMessage);

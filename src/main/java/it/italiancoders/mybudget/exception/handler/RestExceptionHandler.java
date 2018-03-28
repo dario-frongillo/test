@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -47,7 +46,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
         Locale locale = LocaleContextHolder.getLocale();
         ErrorDetail errorDetail = new ErrorDetail();
         errorDetail.setTimeStamp(new Date().getTime());
-        errorDetail.setStatus(HttpStatus.NOT_FOUND.value());
+        errorDetail.setSubcode(HttpStatus.NOT_FOUND.value());
         errorDetail.setTitle(messageSource.getMessage("BadCredentialsException.title",null,locale));
         errorDetail.setDetail(messageSource.getMessage("BadCredentialsException.detail",null,locale));
         errorDetail.setDeveloperMessage(rnfe.getMessage());
@@ -61,7 +60,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
         Locale locale = LocaleContextHolder.getLocale();
         ErrorDetail errorDetail = new ErrorDetail();
         errorDetail.setTimeStamp(new Date().getTime());
-        errorDetail.setStatus(HttpStatus.CONFLICT.value());
+        errorDetail.setSubcode(HttpStatus.CONFLICT.value());
         errorDetail.setTitle(messageSource.getMessage("OptimisticLockingFailureException.title",null,locale));
         errorDetail.setDetail(messageSource.getMessage("OptimisticLockingFailureException.detail",null,locale));
         errorDetail.setDeveloperMessage(rnfe.getMessage());
@@ -76,7 +75,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
         Locale locale = LocaleContextHolder.getLocale();
         // Populate errorDetail instance
         errorDetail.setTimeStamp(new Date().getTime());
-        errorDetail.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        errorDetail.setSubcode(HttpStatus.INTERNAL_SERVER_ERROR.value());
         errorDetail.setTitle(messageSource.getMessage("ConstraintViolationException.title",null,locale));
         errorDetail.setDetail(messageSource.getMessage("ConstraintViolationException.detail",null,locale));
         errorDetail.setException(manve.getClass().getName());
@@ -136,10 +135,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
             HttpHeaders headers,
             HttpStatus status,
             WebRequest request) {
+        Locale locale = LocaleContextHolder.getLocale();
+
         ErrorDetail errorDetail =
                 ErrorDetail.newBuilder()
-                        .title("Validation Failed")
-                        .detail("Input validation failed")
+                        .title(messageSource.getMessage("ValidationFailed.title",null,locale) )
+                        .detail(messageSource.getMessage("ValidationFailed.detail",null,locale) )
                         .constrainctErrors(null)
                         .validationErrors(new HashMap<String, List<ValidationError>>())
                         .exception(manve.getClass().getName())
@@ -159,6 +160,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
 
             if(validationErrors == null) {
                 validationErrors = new ArrayList<ValidationError>();
+                try{
+                    field =messageSource.getMessage(field,null,locale);
+                }catch (Exception e){
+
+                }
                 errorDetail.getValidationErrors().put(field, validationErrors);
             }
 
@@ -169,7 +175,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
 
         });
 
-
+        if(errorDetail.getValidationErrors() != null && errorDetail.getValidationErrors().size() != 0){
+            String msgDetail = errorDetail.getValidationErrors().keySet().stream().findFirst().orElse(null);
+            msgDetail = msgDetail.toUpperCase() + ":"+errorDetail.getValidationErrors().get(msgDetail).get(0).getMessage();
+            errorDetail.setDetail(msgDetail);
+        }
         return new ResponseEntity<>(errorDetail, headers, HttpStatus.BAD_REQUEST);
     }
 
@@ -182,7 +192,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
 
         ErrorDetail errorDetail = new ErrorDetail();
         errorDetail.setTimeStamp(new Date().getTime());
-        errorDetail.setStatus(status.value());
+        errorDetail.setSubcode(status.value());
         errorDetail.setTitle(messageSource.getMessage("HttpMessageNotReadableException.title",null,locale) );
         errorDetail.setDetail(messageSource.getMessage("HttpMessageNotReadableException.detail",null,locale) );
         errorDetail.setDeveloperMessage(ex.getMessage());

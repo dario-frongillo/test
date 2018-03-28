@@ -57,5 +57,20 @@ public class UserDaoImpl extends SqlSessionDaoSupport implements UserDao {
         getSqlSession().insert("it.italiancoders.mybudget.dao.User.insertUser", params);
 
     }
+
+    @Override
+    public Boolean isAlreadyExistMail(String email) {
+        Map<String,Object> params = new HashMap<>();
+        params.put("email", email);
+        return (Integer) getSqlSession().selectOne("it.italiancoders.mybudget.dao.User.checkIfExist", params) > 0 ? true : false;
+    }
+
+    @Override
+    public Boolean isAlreadyExistUsername(String username) {
+        Map<String,Object> params = new HashMap<>();
+        params.put("username", username);
+        return (Integer) getSqlSession().selectOne("it.italiancoders.mybudget.dao.User.checkIfExist", params) > 0 ? true : false;
+
+    }
 }
 

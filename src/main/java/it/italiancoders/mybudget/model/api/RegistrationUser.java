@@ -24,7 +24,6 @@ public class RegistrationUser  {
     @NotNull
     private String username;
 
-    @JsonIgnore
     @NotNull
     private String password;
 
