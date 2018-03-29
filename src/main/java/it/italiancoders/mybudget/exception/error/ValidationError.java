@@ -6,7 +6,6 @@ public class ValidationError {
 
     private String code;
     private String message;
-    private MessageSource messageSource;
 
     public String getCode() {
         return code;

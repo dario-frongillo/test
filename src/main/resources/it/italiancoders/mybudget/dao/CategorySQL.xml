@@ -1,0 +1,33 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="it.italiancoders.mybudget.dao.Category">
+
+    <resultMap id="categoryMap" type="it.italiancoders.mybudget.model.api.Category">
+        <result property="id" column="id"/>
+        <result property="value" column="value"/>
+        <result property="type" column="type" javaType="it.italiancoders.mybudget.model.api.MovementType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result property="isEditable" column="isEditable"/>
+
+    </resultMap>
+
+
+    <select id="findCategories" resultMap="categoryMap">
+            select
+              id AS id,
+              user_value AS value,
+              type AS type,
+              is_editable AS isEditable
+          FROM PUBLIC.CATEGORIES
+        <where>
+            1 = 1
+            <if test="type != null">
+                AND type= #{type}
+            </if>
+            AND (account_id IS NULL OR account_id = #{accountId})
+
+        </where>
+    </select>
+
+
+</mapper>

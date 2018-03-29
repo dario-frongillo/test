@@ -1,7 +1,6 @@
 package it.italiancoders.mybudget.exception.handler;
 
 import it.italiancoders.mybudget.exception.RestException;
-import it.italiancoders.mybudget.exception.error.ConstrainctError;
 import it.italiancoders.mybudget.exception.error.ErrorDetail;
 import it.italiancoders.mybudget.exception.error.ValidationError;
 import org.slf4j.Logger;
@@ -29,6 +28,8 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 
 @ControllerAdvice
@@ -67,6 +68,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
         errorDetail.setException(rnfe.getClass().getName());
         return new ResponseEntity<>(errorDetail, null, HttpStatus.CONFLICT);
     }
+
+    /*
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleMethodConstrainct(ConstraintViolationException manve ) {
 
@@ -101,7 +104,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
             validationErrorList.add(constrainctError);
         }
         return new ResponseEntity<>(errorDetail, null, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    }*/
 
     @ExceptionHandler({RestException.class})
     public ResponseEntity<Object> handleRestApiException(final RestException ex, final WebRequest request) {
@@ -117,13 +120,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
                 ErrorDetail.newBuilder()
                         .title(ex.getTitle())
                         .detail(ex.getDetail())
-                        .constrainctErrors(null)
                         .code(ex.getCode())
                         .validationErrors(null)
                         .status(ex.getStatus().value())
                         .exception(ex.getClass().getName())
                         .developerMessage(stack.substring(0,300))
-                        .constrainctErrors(null)
                         .build();
 
         return new ResponseEntity<>(errorDetail, headers, ex.getStatus());
@@ -141,11 +142,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
                 ErrorDetail.newBuilder()
                         .title(messageSource.getMessage("ValidationFailed.title",null,locale) )
                         .detail(messageSource.getMessage("ValidationFailed.detail",null,locale) )
-                        .constrainctErrors(null)
+                        .code(HttpStatus.BAD_REQUEST.value())
                         .validationErrors(new HashMap<String, List<ValidationError>>())
                         .exception(manve.getClass().getName())
+                        .timeStamp(Instant.now().getEpochSecond())
                         .developerMessage(manve.toString())
-                        .constrainctErrors(null)
                         .build();
 
 

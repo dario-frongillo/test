@@ -28,7 +28,7 @@ public class I18nConfig    implements WebMvcConfigurer {
     public MessageSource errorMessageSource() {
         ReloadableResourceBundleMessageSource messageSource =
                 new ReloadableResourceBundleMessageSource();
-        messageSource.setBasenames("classpath:/i18n/errors/messages","classpath:/i18n/errors/validations");
+        messageSource.setBasenames("classpath:/i18n/errors/messages","classpath:/i18n/errors/validations", "classpath:/i18n/errors/tags");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }

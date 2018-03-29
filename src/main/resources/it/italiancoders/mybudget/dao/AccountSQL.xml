@@ -1,0 +1,63 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="it.italiancoders.mybudget.dao.Account">
+
+    <resultMap id="accountMap" type="it.italiancoders.mybudget.model.api.Account">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="defaultUsername" column="defaultUsername"/>
+        <result property="description" column="description"/>
+        <result property="isSharable" column="isSharable"/>
+        <result property="isDeletable" column="isDeletable"/>
+        <result property="status" column="status" javaType="it.italiancoders.mybudget.model.api.AccountStatusEnum" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+
+    </resultMap>
+
+
+    <select id="findAccounts" resultMap="accountMap">
+            select id AS id,
+            name AS name,
+            description AS description,
+            IS_SHARABLE AS isSharable,
+            IS_DELETABLE AS  isDeletable,
+            DEFAULT_USER AS defaultUsername,
+            status AS status
+          FROM PUBLIC.ACCOUNTS
+          INNER JOIN PUBLIC.USER_ACCOUNT ON (USER_ACCOUNT.ID_ACCOUNT = ACCOUNTS.ID)
+        <where>
+            1 = 1
+            <if test="username != null">
+                AND LOWER (USER_ACCOUNT.ID_USER)= LOWER(#{username})
+            </if>
+
+            <if test="id != null">
+                AND ACCOUNTS.id= #{id}
+            </if>
+        </where>
+        group by id,name,description,IS_SHARABLE,IS_DELETABLE,status
+        order by ACCOUNTS.status desc, ACCOUNTS.UPDATEDAT desc
+    </select>
+
+    <update id="updateAccount" >
+        UPDATE  PUBLIC.ACCOUNTS
+           SET  name =#{name},
+                description = #{description},
+                LASTNAME  = #{lastname},
+                status =  #{status}
+        WHERE   id=  #{id}
+    </update>
+
+    <insert id="insertAccount" >
+        INSERT INTO  PUBLIC.ACCOUNTS
+          (id,name,description,is_sharable,IS_DELETABLE,status, DEFAULT_USER)
+        VALUES
+          (#{id}, #{name},#{description},#{is_sharable},#{is_deletable},#{status}, #{defaultUsername} )
+    </insert>
+
+    <insert id="insertUserAccount" >
+        INSERT INTO  PUBLIC.USER_ACCOUNT
+          values ( #{username},#{idAccount})
+    </insert>
+
+</mapper>

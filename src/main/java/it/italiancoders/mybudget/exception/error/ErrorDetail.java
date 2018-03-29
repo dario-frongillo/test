@@ -9,8 +9,6 @@ public class ErrorDetail {
 
     private String title;
 
-    private int subcode;
-
     private String detail;
 
     private long timeStamp;
@@ -21,11 +19,13 @@ public class ErrorDetail {
 
     private int code;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Map<String, List<ValidationError>> validationErrors ;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Map<String, List<ConstrainctError>> constrainctErrors ;
+    private Integer subcode;
+
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Map<String, List<ValidationError>> validationErrors ;
 
     public String getTitle() {
         return title;
@@ -82,14 +82,6 @@ public class ErrorDetail {
         this.validationErrors = validationErrors;
     }
 
-    public Map<String, List<ConstrainctError>> getConstrainctErrors() {
-        return constrainctErrors;
-    }
-
-    public void setConstrainctErrors(Map<String, List<ConstrainctError>> constrainctErrors) {
-        this.constrainctErrors = constrainctErrors;
-    }
-
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -103,7 +95,6 @@ public class ErrorDetail {
         private String exception;
         private int code;
         private Map<String, List<ValidationError>> validationErrors ;
-        private Map<String, List<ConstrainctError>> constrainctErrors ;
 
         private Builder() {
         }
@@ -148,11 +139,6 @@ public class ErrorDetail {
             return this;
         }
 
-        public Builder constrainctErrors(Map<String, List<ConstrainctError>> constrainctErrors) {
-            this.constrainctErrors = constrainctErrors;
-            return this;
-        }
-
         public ErrorDetail build() {
             ErrorDetail errorDetail = new ErrorDetail();
             errorDetail.setTitle(title);
@@ -163,7 +149,6 @@ public class ErrorDetail {
             errorDetail.setException(exception);
             errorDetail.setCode(code);
             errorDetail.setValidationErrors(validationErrors);
-            errorDetail.setConstrainctErrors(constrainctErrors);
             return errorDetail;
         }
     }

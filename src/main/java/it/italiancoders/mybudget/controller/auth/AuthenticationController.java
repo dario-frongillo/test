@@ -8,6 +8,7 @@ import it.italiancoders.mybudget.model.api.JwtAuthenticationResponse;
 import it.italiancoders.mybudget.model.api.SocialTypeEnum;
 import it.italiancoders.mybudget.model.api.User;
 import it.italiancoders.mybudget.service.social.SocialManager;
+import it.italiancoders.mybudget.service.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -44,6 +46,9 @@ public class AuthenticationController {
     @Autowired
     private SocialManager socialManager;
 
+    @Autowired
+    private UserManager userManager;
+
     @RequestMapping(value = "public/v1/login", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest, HttpServletResponse response) throws AuthenticationException, JsonProcessingException {
 
@@ -66,7 +71,7 @@ public class AuthenticationController {
         final String refreshToken = jwtTokenUtil.generateToken(userDetails, JwtTokenType.RefreshToken);
         response.setHeader(tokenHeader,accessToken);
         // Ritorno il token
-        return ResponseEntity.ok(JwtAuthenticationResponse.newBuilder().user((User) userDetails).refreshToken(refreshToken).build());
+        return ResponseEntity.ok(userManager.createSession((User) userDetails,refreshToken));
     }
 
     @RequestMapping(value = "protected/refresh-token", method = RequestMethod.GET)
