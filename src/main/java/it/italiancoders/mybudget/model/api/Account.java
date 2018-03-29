@@ -30,9 +30,6 @@ public class Account {
 
     private AccountStatusEnum status;
 
-    private Double dailyBalance;
-
-    private Double weeklyBalance;
 
     @JsonIgnore
     private String defaultUsername;
