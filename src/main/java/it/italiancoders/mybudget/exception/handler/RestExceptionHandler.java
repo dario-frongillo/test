@@ -1,5 +1,7 @@
 package it.italiancoders.mybudget.exception.handler;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import it.italiancoders.mybudget.exception.NoSuchEntityException;
 import it.italiancoders.mybudget.exception.RestException;
 import it.italiancoders.mybudget.exception.error.ErrorDetail;
 import it.italiancoders.mybudget.exception.error.ValidationError;
@@ -47,7 +49,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
         Locale locale = LocaleContextHolder.getLocale();
         ErrorDetail errorDetail = new ErrorDetail();
         errorDetail.setTimeStamp(new Date().getTime());
-        errorDetail.setSubcode(HttpStatus.NOT_FOUND.value());
+        errorDetail.setCode(HttpStatus.NOT_FOUND.value());
+        errorDetail.setSubcode(0);
         errorDetail.setTitle(messageSource.getMessage("BadCredentialsException.title",null,locale));
         errorDetail.setDetail(messageSource.getMessage("BadCredentialsException.detail",null,locale));
         errorDetail.setDeveloperMessage(rnfe.getMessage());
@@ -55,56 +58,21 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
         return new ResponseEntity<>(errorDetail, null, HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(OptimisticLockingFailureException.class)
-    public ResponseEntity<?> handleInvalidGrantException(OptimisticLockingFailureException rnfe, HttpServletRequest request) {
+
+    @ExceptionHandler(NoSuchEntityException.class)
+    public ResponseEntity<?> handleInvalidGrantException(NoSuchEntityException rnfe, HttpServletRequest request) {
 
         Locale locale = LocaleContextHolder.getLocale();
         ErrorDetail errorDetail = new ErrorDetail();
         errorDetail.setTimeStamp(new Date().getTime());
-        errorDetail.setSubcode(HttpStatus.CONFLICT.value());
-        errorDetail.setTitle(messageSource.getMessage("OptimisticLockingFailureException.title",null,locale));
-        errorDetail.setDetail(messageSource.getMessage("OptimisticLockingFailureException.detail",null,locale));
+        errorDetail.setCode(HttpStatus.NOT_FOUND.value());
+        errorDetail.setTitle(rnfe.getMessage());
+        errorDetail.setDetail(rnfe.getMessage());
         errorDetail.setDeveloperMessage(rnfe.getMessage());
         errorDetail.setException(rnfe.getClass().getName());
-        return new ResponseEntity<>(errorDetail, null, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(errorDetail, null, HttpStatus.NOT_FOUND);
     }
 
-    /*
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Object> handleMethodConstrainct(ConstraintViolationException manve ) {
-
-        ErrorDetail errorDetail = new ErrorDetail();
-
-        Locale locale = LocaleContextHolder.getLocale();
-        // Populate errorDetail instance
-        errorDetail.setTimeStamp(new Date().getTime());
-        errorDetail.setSubcode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        errorDetail.setTitle(messageSource.getMessage("ConstraintViolationException.title",null,locale));
-        errorDetail.setDetail(messageSource.getMessage("ConstraintViolationException.detail",null,locale));
-        errorDetail.setException(manve.getClass().getName());
-        errorDetail.setDeveloperMessage(manve.getMessage());
-        errorDetail.setConstrainctErrors( new HashMap<String, List<ConstrainctError>>() );
-        List<ConstraintViolation> constrainctsViolated=new ArrayList<>();
-        constrainctsViolated.addAll(manve.getConstraintViolations());
-
-        // Create ValidationError instances
-        for(ConstraintViolation violation : constrainctsViolated) {
-            String field=violation.getPropertyPath().toString();
-            String entity=violation.getRootBeanClass().getCanonicalName();
-            String message=violation.getMessage() ;
-            String code=violation.getConstraintDescriptor().getAnnotation().annotationType().getName();
-            List<ConstrainctError> validationErrorList = errorDetail.getConstrainctErrors().get(field);
-            if(validationErrorList == null) {
-                validationErrorList = new ArrayList<ConstrainctError>();
-                errorDetail.getConstrainctErrors().put(field, validationErrorList);
-            }
-            ConstrainctError constrainctError = new ConstrainctError();
-            constrainctError.setCode(code);
-            constrainctError.setMessage(message);
-            validationErrorList.add(constrainctError);
-        }
-        return new ResponseEntity<>(errorDetail, null, HttpStatus.INTERNAL_SERVER_ERROR);
-    }*/
 
     @ExceptionHandler({RestException.class})
     public ResponseEntity<Object> handleRestApiException(final RestException ex, final WebRequest request) {
@@ -193,7 +161,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler  {
 
         ErrorDetail errorDetail = new ErrorDetail();
         errorDetail.setTimeStamp(new Date().getTime());
-        errorDetail.setSubcode(status.value());
+        errorDetail.setCode(status.value());
         errorDetail.setTitle(messageSource.getMessage("HttpMessageNotReadableException.title",null,locale) );
         errorDetail.setDetail(messageSource.getMessage("HttpMessageNotReadableException.detail",null,locale) );
         errorDetail.setDeveloperMessage(ex.getMessage());

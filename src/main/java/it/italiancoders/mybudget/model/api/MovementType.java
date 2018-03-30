@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum MovementType {
 
-  Incoming(0), Expense(1), Both(2);
+  Incoming(0), Expense(1);
 
   private Integer value;
 

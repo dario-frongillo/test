@@ -2,6 +2,7 @@ package it.italiancoders.mybudget.model.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.hibernate.validator.constraints.Email;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,29 +20,37 @@ public class User implements UserDetails {
 
     @Size(min = 4, max = 100)
     @NotNull
+    @JsonProperty("username")
     private String username;
 
     @JsonIgnore
     @NotNull
+    @JsonProperty("password")
     private String password;
 
     @Email
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonProperty("email")
     private String email;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonProperty("firstname")
     private String firstname;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonProperty("lastname")
     private String lastname;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonProperty("alias")
     private String alias;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonProperty("gender")
     private GenderEnum gender;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonProperty("socialType")
     private SocialTypeEnum socialType;
 
     @JsonIgnore

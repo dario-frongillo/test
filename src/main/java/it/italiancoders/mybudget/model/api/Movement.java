@@ -1,9 +1,8 @@
 package it.italiancoders.mybudget.model.api;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 @Builder(builderMethodName = "newBuilder")
 @Getter
@@ -13,21 +12,35 @@ public class Movement {
 
     public Movement(){}
 
+    @JsonProperty("id")
+    //ReadOnly
     private String id;
 
-    private MovementType movementType;
+    @JsonProperty("type")
+    @NonNull
+    private MovementType type;
 
+    @JsonProperty("amount")
+    @NonNull
     private Double amount;
 
+    @JsonProperty("executedBy")
     private User executedBy;
 
+    @JsonProperty("executedAt")
     private Long executedAt;
 
+    @JsonProperty("uptadedAt")
     private Long uptadedAt;
 
+    @JsonProperty("note")
     private String note;
 
+    @JsonProperty("category")
     private Category category;
+
+    @JsonIgnore
+    private Account account;
 
 
 }

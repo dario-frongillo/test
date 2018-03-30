@@ -1,6 +1,7 @@
 package it.italiancoders.mybudget.exception.error;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,8 @@ public class ErrorDetail {
 
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Integer subcode;
+    @lombok.Builder.Default
+    private Integer subcode = 0;
 
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

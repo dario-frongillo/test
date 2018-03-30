@@ -43,6 +43,22 @@ CREATE TABLE  USER_ACCOUNT(
 );
 
 
+ CREATE TABLE  MOVEMENTS(
+   ID TEXT PRIMARY KEY     NOT NULL,
+   TYPE           SMALLINT    NOT NULL,
+   AMOUNT FLOAT,
+   EXECUTEDBY           TEXT,
+   ACCOUNTID           TEXT,
+   NOTE            TEXT,
+   CATEGORYID TEXT,
+   EXECUTEDAT bigint,
+   CREATEDAT bigint,
+   UPDATEDAT bigint,
+   EXEC_DAY SMALLINT,
+   EXEC_MONTH SMALLINT,
+   EXEC_YEAR SMALLINT
+
+);
 
 CREATE UNIQUE INDEX USERNAME_ci_idx ON users ((lower(USERNAME)));
 CREATE  INDEX EMAIL_ci_idx ON users ((lower(EMAIL)));
@@ -60,6 +76,21 @@ CREATE OR REPLACE FUNCTION stamp() RETURNS trigger AS $stamp$
 $stamp$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION stampMovement() RETURNS trigger AS $stampMovement$
+    BEGIN
+
+        IF (TG_OP = 'INSERT') THEN
+        	NEW.CREATEDAT := trunc(extract(epoch from now() at time zone 'utc'));
+        END IF;
+        NEW.UPDATEDAT := trunc(extract(epoch from now() at time zone 'utc'));
+        NEW.EXEC_DAY = EXTRACT(DAY from (to_timestamp(1522413159)::timestamp with time zone at time zone 'utc'));
+        NEW.EXEC_MONTH = EXTRACT(DAY from (to_timestamp(1522413159)::timestamp with time zone at time zone 'utc'));
+        NEW.EXEC_YEAR = EXTRACT(DAY from (to_timestamp(1522413159)::timestamp with time zone at time zone 'utc'));
+        RETURN NEW;
+    END;
+$stampMovement$ LANGUAGE plpgsql;
+
+
 CREATE TRIGGER users_stamp BEFORE INSERT OR UPDATE ON users
     FOR EACH ROW EXECUTE PROCEDURE stamp();
 
@@ -69,3 +100,7 @@ CREATE TRIGGER ACCOUNTS_stamp BEFORE INSERT OR UPDATE ON ACCOUNTS
 
 CREATE TRIGGER categories_stamp BEFORE INSERT OR UPDATE ON CATEGORIES
     FOR EACH ROW EXECUTE PROCEDURE stamp();
+
+
+CREATE TRIGGER MOVENENTS_stamp BEFORE INSERT OR UPDATE ON MOVEMENTS
+    FOR EACH ROW EXECUTE PROCEDURE stampMovement();

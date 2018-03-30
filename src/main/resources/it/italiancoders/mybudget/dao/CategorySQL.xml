@@ -24,6 +24,10 @@
             <if test="type != null">
                 AND type= #{type}
             </if>
+            <if test="id != null">
+                AND id= #{id}
+            </if>
+
             AND (account_id IS NULL OR account_id = #{accountId})
 
         </where>

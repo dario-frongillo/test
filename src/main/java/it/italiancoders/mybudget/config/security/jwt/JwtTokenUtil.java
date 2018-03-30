@@ -3,6 +3,7 @@ package it.italiancoders.mybudget.config.security.jwt;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import it.italiancoders.mybudget.model.api.GenderEnum;
@@ -90,7 +91,7 @@ public class JwtTokenUtil implements Serializable {
                         .build();
 
         } catch (Exception e) {
-            return null;
+            throw e;
         }
 
     }
@@ -119,14 +120,16 @@ public class JwtTokenUtil implements Serializable {
 
 
     private Claims getClaimsFromToken(String token) {
-        Claims claims;
+        Claims claims = null;
         try {
             claims = Jwts.parser()
                     .setSigningKey(secret)
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (Exception e) {
-            claims = null;
+        } catch (ExpiredJwtException e) {
+            throw e;
+        } catch (Exception e){
+
         }
         return claims;
     }
