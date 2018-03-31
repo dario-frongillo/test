@@ -7,4 +7,5 @@ import java.util.List;
 public interface CategoryDao {
     List<Category> findCategories(String accountId);
     Category findCategoryByIdAndAccount(String id, String accountId);
+    void solveTitle(Category category);
 }

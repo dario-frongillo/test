@@ -23,7 +23,7 @@ INSERT INTO categories VALUES ('10', 1, 'tag.expense.bodyCare', false, NULL, 152
 INSERT INTO categories VALUES ('11', 1, 'tag.expense.dinner', false, NULL, 1522327857, 1522327981);
 INSERT INTO categories VALUES ('12', 1, 'tag.expense.gift', false, NULL, 1522327857, 1522327981);
 INSERT INTO categories VALUES ('13', 1, 'tag.expense.health', false, NULL, 1522327943, 1522327981);
-INSERT INTO categories VALUES ('14', 1, 'tag.tag.expense.sport', false, NULL, 1522327954, 1522327981);
+INSERT INTO categories VALUES ('14', 1, 'tag.expense.sport', false, NULL, 1522327954, 1522327981);
 INSERT INTO categories VALUES ('15', 1, 'tag.expense.transportation', false, NULL, 1522327970, 1522327981);
 INSERT INTO categories VALUES ('16', 0, 'tag.expense.general', false, NULL, 1522327970, 1522327981);
 INSERT INTO categories VALUES ('17', 1, 'tag.incoming.general', false, NULL, 1522327970, 1522327981);

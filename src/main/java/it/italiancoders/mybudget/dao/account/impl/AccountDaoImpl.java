@@ -3,6 +3,7 @@ package it.italiancoders.mybudget.dao.account.impl;
 import it.italiancoders.mybudget.dao.account.AccountDao;
 import it.italiancoders.mybudget.dao.user.UserDao;
 import it.italiancoders.mybudget.model.api.Account;
+import it.italiancoders.mybudget.model.api.Category;
 import it.italiancoders.mybudget.model.api.User;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
@@ -44,14 +45,26 @@ public class AccountDaoImpl extends SqlSessionDaoSupport implements AccountDao {
         super.setSqlSessionFactory(sqlSessionFactory);
     }
 
+    @Override
+    public void solveTitle(Account account){
+        final Locale locale = LocaleContextHolder.getLocale();
+
+        if( account == null || StringUtils.isEmpty(account.getDefaultUsername())){
+            return ;
+        }
+
+        account.setDescription(getDefaultDescription(account.getDescription()));
+        account.setName(getDefaultName(account.getName()));
+
+    }
+
     private List<Account> findAccounts(Map<String,Object> params){
         List<Account> accounts = getSqlSession().selectList("it.italiancoders.mybudget.dao.Account.findAccounts",params);
 
         if(accounts != null && accounts.size() > 0){
             accounts.stream().filter(account -> !StringUtils.isEmpty(account.getDefaultUsername())).forEach(
                     account -> {
-                        account.setDescription(getDefaultDescription(account.getDescription()));
-                        account.setName(getDefaultName(account.getName()));
+                        solveTitle(account);
                     }
             );
         }

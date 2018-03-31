@@ -15,4 +15,6 @@ public interface AccountDao {
 
     Account findById(String id, String username);
 
+    void solveTitle(Account account);
+
 }

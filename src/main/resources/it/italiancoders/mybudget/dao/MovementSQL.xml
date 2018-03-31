@@ -4,37 +4,44 @@
 <mapper namespace="it.italiancoders.mybudget.dao.Movement">
 
 
-    <resultMap id="userMap" type="it.italiancoders.mybudget.model.api.User">
-        <result property="username" column="username"/>
-        <result property="password" column="password"/>
-        <result property="email" column="email"/>
-        <result property="firstname" column="firstname"/>
-        <result property="lastname" column="lastname"/>
-        <result property="alias" column="alias"/>
-        <result property="socialType" column="socialType" javaType="it.italiancoders.mybudget.model.api.SocialTypeEnum" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
-        <result property="gender" column="gender" javaType="it.italiancoders.mybudget.model.api.GenderEnum" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+    <resultMap id="movementMap" type="it.italiancoders.mybudget.model.api.Movement">
+        <result property="id" column="id"/>
+        <result property="type" column="type" javaType="it.italiancoders.mybudget.model.api.MovementType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result property="amount" column="amount"/>
+        <result property="executedAt" column="executedAt"/>
+        <result property="uptadedAt" column="uptadedAt"/>
+        <result property="executedBy.username" column="username"/>
+        <result property="executedBy.email" column="email"/>
+        <result property="executedBy.firstname" column="firstname"/>
+        <result property="executedBy.lastname" column="lastname"/>
+        <result property="executedBy.alias" column="alias"/>
+        <result property="executedBy.socialType" column="socialType" javaType="it.italiancoders.mybudget.model.api.SocialTypeEnum" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result property="executedBy.gender" column="gender" javaType="it.italiancoders.mybudget.model.api.GenderEnum" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+
+        <result property="account.id" column="accountId"/>
+        <result property="account.name" column="accountName"/>
+        <result property="account.defaultUsername" column="accountDefaultUsername"/>
+        <result property="account.description" column="accountDescription"/>
+        <result property="account.isSharable" column="accountIsSharable"/>
+        <result property="account.isDeletable" column="accountIsDeletable"/>
+        <result property="account.status" column="accountStatus" javaType="it.italiancoders.mybudget.model.api.AccountStatusEnum" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+
+        <result property="category.id" column="categoryId"/>
+        <result property="category.value" column="categoryValue"/>
+        <result property="category.type" column="categoryType" javaType="it.italiancoders.mybudget.model.api.MovementType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result property="category.isEditable" column="categoryIsEditable"/>
+
+    </resultMap>
+
+    <resultMap id="movementSummaryMap" type="it.italiancoders.mybudget.model.api.mybatis.MovementSummaryResultType">
+        <result property="categoryId" column="categoryId"/>
+        <result property="type" column="type" javaType="it.italiancoders.mybudget.model.api.MovementType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result property="total" column="total"/>
 
     </resultMap>
 
 
-    <select id="findUsers" resultMap="userMap">
-        select USERNAME AS username,
-        PASSWORD AS password,
-        EMAIL AS email,
-        FIRSTNAME AS firstname,
-        LASTNAME AS  lastname,
-        ALIAS AS alias,
-        SOCIALTYPE AS socialType,
-        GENDER as gender
-        from PUBLIC.USERS
-        <where>
-            1 = 1
-            <if test="username != null">
-                AND LOWER (USERNAME)= LOWER(#{username})
-            </if>
-
-        </where>
-
+    <select id="findMovements" resultMap="movementMap">
         SELECT
             mov.ID as id,
             mov.TYPE as type,
@@ -42,10 +49,28 @@
             mov.EXECUTEDBY as executedBy,
             mov.EXECUTEDAT as executedAt,
             mov.NOTE as note,
-            mov.CATEGORYID as categoryId,
-            mov.ACCOUNTID as accountId
+            mov.updatedat as uptadedAt,
+            USERS.USERNAME AS username,
+            USERS.PASSWORD AS password,
+            USERS.EMAIL AS email,
+            USERS.FIRSTNAME AS firstname,
+            USERS.LASTNAME AS  lastname,
+            USERS.ALIAS AS alias,
+            USERS.SOCIALTYPE AS socialType,
+            USERS.GENDER as gender,
+            ACCOUNTS.id AS accountId ,
+            ACCOUNTS.name AS accountName,
+            ACCOUNTS.description AS accountDescription,
+            ACCOUNTS.IS_SHARABLE AS accountIsSharable,
+            ACCOUNTS.IS_DELETABLE AS  accountIsDeletable,
+            ACCOUNTS.DEFAULT_USER AS accountDefaultUsername,
+            ACCOUNTS.status AS accountStatus,
+            CATEGORIES.id AS categoryId,
+            CATEGORIES.user_value AS categoryValue,
+            CATEGORIES.type AS categoryType,
+            CATEGORIES.is_editable AS categoryIsEditable
         FROM
-        (SELECT ID, TYPE, AMOUNT, EXECUTEDBY, EXECUTEDAT, NOTE, CATEGORYID, ACCOUNTID
+        (SELECT ID, TYPE, AMOUNT, EXECUTEDBY, EXECUTEDAT, NOTE, CATEGORYID, ACCOUNTID,updatedat
         FROM MOVEMENTS
         <where>
             1 = 1
@@ -67,10 +92,42 @@
         </where>
         ORDER BY EXECUTEDAT DESC
         ) AS mov
+        Left JOIN USERS  ON (USERS.USERNAME = mov.EXECUTEDBY)
+        Left JOIN ACCOUNTS  ON (ACCOUNTS.ID = mov.ACCOUNTID)
+        LEFT JOIN CATEGORIES ON (CATEGORIES.ID = mov.CATEGORYID)
         <if test="limit != null">
         limit  #{limit}
         </if>
 
+    </select>
+
+
+    <select id="calculateSummaryMovements" resultMap="movementSummaryMap">
+        select
+          categoryId as categoryId,
+          type as type,
+          sum(amount) as total
+        from movements
+        <where>
+            1 = 1
+            <if test="accountId != null">
+                AND ACCOUNTID= #{accountId}
+            </if>
+
+            <if test="day != null">
+                AND exec_day= #{day}
+            </if>
+            <if test="month != null">
+                AND exec_month= #{month}
+            </if>
+
+            <if test="year != null">
+                AND exec_year= #{year}
+            </if>
+
+        </where>
+        group by categoryId, type
+        order by type
     </select>
 
     <insert id="insertMovement" >

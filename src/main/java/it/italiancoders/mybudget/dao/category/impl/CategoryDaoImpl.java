@@ -42,34 +42,6 @@ public class CategoryDaoImpl extends SqlSessionDaoSupport implements CategoryDao
         super.setSqlSessionFactory(sqlSessionFactory);
     }
 
-    public String getDefaultName(String key){
-        String i18nKey = "Predefinito";
-
-        Locale locale = LocaleContextHolder.getLocale();
-
-        try{
-            i18nKey = messageSource.getMessage(key,null,locale);
-        }catch (Exception e){
-
-        }
-
-        return i18nKey;
-    }
-
-    public String getDefaultDescription (String key){
-        String i18nKey = "Account  personale";
-
-        Locale locale = LocaleContextHolder.getLocale();
-
-        try{
-            i18nKey = messageSource.getMessage(key,null,locale);
-        }catch (Exception e){
-
-        }
-
-        return i18nKey;
-    }
-
     @Override
     public Category findCategoryByIdAndAccount(String id, String accountId){
         Map<String,Object> params = new HashMap<>();
@@ -86,6 +58,23 @@ public class CategoryDaoImpl extends SqlSessionDaoSupport implements CategoryDao
         return find(params);
     }
 
+    public void solveTitle(Category category){
+        final Locale locale = LocaleContextHolder.getLocale();
+
+        if( category == null || category.getIsEditable()){
+            return ;
+        }
+        String value = category.getValue();
+
+        try{
+            value = messageSource.getMessage(value,null,locale);
+        }catch (Exception e){
+
+        }
+
+        category.setValue(value);
+
+    }
 
     private List<Category> find(Map<String, Object> params){
         final Locale locale = LocaleContextHolder.getLocale();
@@ -100,15 +89,7 @@ public class CategoryDaoImpl extends SqlSessionDaoSupport implements CategoryDao
                     if(category.getIsEditable()){
                         return category;
                     }
-                    String value = category.getValue();
-
-                    try{
-                        value = messageSource.getMessage(value,null,locale);
-                    }catch (Exception e){
-
-                    }
-
-                    category.setValue(value);
+                    solveTitle(category);
                     return category;
                 }).sorted((c1,c2) -> c1.getValue().compareToIgnoreCase(c2.getValue()))
                 .collect(Collectors.toList());
