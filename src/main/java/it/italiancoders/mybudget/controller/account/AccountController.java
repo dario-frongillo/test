@@ -95,41 +95,7 @@ public class AccountController {
                     });
         }
 
-        expenseMap.put(spese.get(0).getId(),100.30D );
-        expenseMap.put(spese.get(1).getId(),50.0D );
-        incomingMap.put(entrate.get(0).getId(),850.00D );
 
-
-        Movement m1 = Movement.newBuilder()
-                        .type(MovementType.Expense)
-                        .amount(100.30D)
-                        .executedBy(currentUser)
-                        .executedAt(DateUtils.getUnixTime(new Date()))
-                        .uptadedAt(DateUtils.getUnixTime(new Date()))
-                        .id(UUID.randomUUID().toString())
-                         .note("Nota1")
-                        .category(spese.get(0))
-                        .build();
-
-        Movement m2 = Movement.newBuilder()
-                .type(MovementType.Expense)
-                .amount(50.00D)
-                .executedBy(currentUser)
-                .executedAt(DateUtils.getUnixTime(new Date()))
-                .uptadedAt(DateUtils.getUnixTime(new Date()))
-                .id(UUID.randomUUID().toString())
-                .category(spese.get(1))
-                .build();
-
-        Movement m3 = Movement.newBuilder()
-                .type(MovementType.Incoming)
-                .amount(850.00D)
-                .executedBy(currentUser)
-                .executedAt(DateUtils.getUnixTime(new Date()))
-                .uptadedAt(DateUtils.getUnixTime(new Date()))
-                .id(UUID.randomUUID().toString())
-                .category(entrate.get(0))
-                .build();
 
         List<Movement> movements = movementDao.findLastMovements(accountId,new Date(), 10);
 
