@@ -121,13 +121,15 @@ public class MovementDaoImpl extends SqlSessionDaoSupport implements MovementDao
     }
 
     @Override
-    public Page<Movement> findMovements(String accountId, Integer year, Integer month, Integer day, String user, Integer page) {
+    public Page<Movement> findMovements(String accountId, Integer year, Integer month, Integer day, String user,String categoryId, Integer page) {
         Map<String,Object> params = new HashMap<>();
         params.put("accountId", accountId);
         params.put("month", month);
         params.put("year", year);
         params.put("day", day);
         params.put("user", user);
+        params.put("categoryId", categoryId);
+
         List<Movement> result = new ArrayList<>();
 
         Integer count = getSqlSession().selectOne("it.italiancoders.mybudget.dao.Movement.findMovementsCount", params);

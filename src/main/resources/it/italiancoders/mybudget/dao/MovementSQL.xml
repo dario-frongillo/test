@@ -65,6 +65,11 @@
             <if test="user != null">
                 AND EXECUTEDBY= #{user}
             </if>
+            <if test="categoryId != null">
+                AND CATEGORYID= #{categoryId}
+            </if>
+
+
         </where>
     </sql>
 

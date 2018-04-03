@@ -253,7 +253,7 @@ public class AccountController {
 
                                            ) throws Exception {
 
-        Page<Movement> movements = movementDao.findMovements(accountId, year, month, day, user, page);
+        Page<Movement> movements = movementDao.findMovements(accountId, year, month, day, user,categoryId, page);
 
         return ResponseEntity.ok(movements);
 

@@ -15,5 +15,5 @@ public interface MovementDao {
     List<MovementSummaryResultType> calculateSummaryMovements(String accountId, Date date);
     void updateMovement(Movement movement);
     void deleteMovement(String movementId);
-    Page<Movement> findMovements(String accountId, Integer year, Integer month, Integer day, String user, Integer page);
+    Page<Movement> findMovements(String accountId, Integer year, Integer month, Integer day, String user, String categoryId, Integer page);
 }
