@@ -40,6 +40,33 @@
 
     </resultMap>
 
+    <sql id="movementsFilter">
+        <where>
+            1 = 1
+            <if test="accountId != null">
+                AND ACCOUNTID= #{accountId}
+            </if>
+
+            <if test="day != null">
+                AND exec_day= #{day}
+            </if>
+            <if test="month != null">
+                AND exec_month= #{month}
+            </if>
+
+            <if test="year != null">
+                AND exec_year= #{year}
+            </if>
+
+            <if test="movementId != null">
+                AND id= #{movementId}
+            </if>
+
+            <if test="user != null">
+                AND EXECUTEDBY= #{user}
+            </if>
+        </where>
+    </sql>
 
     <select id="findMovements" resultMap="movementMap">
         SELECT
@@ -72,27 +99,7 @@
         FROM
         (SELECT ID, TYPE, AMOUNT, EXECUTEDBY, EXECUTEDAT, NOTE, CATEGORYID, ACCOUNTID,updatedat
         FROM MOVEMENTS
-        <where>
-            1 = 1
-            <if test="accountId != null">
-                AND ACCOUNTID= #{accountId}
-            </if>
-
-            <if test="day != null">
-                AND exec_day= #{day}
-            </if>
-            <if test="month != null">
-                AND exec_month= #{month}
-            </if>
-
-            <if test="year != null">
-                AND exec_year= #{year}
-            </if>
-
-            <if test="movementId != null">
-                AND id= #{movementId}
-            </if>
-        </where>
+        <include refid="movementsFilter" />
         ORDER BY EXECUTEDAT DESC
         ) AS mov
         Left JOIN USERS  ON (USERS.USERNAME = mov.EXECUTEDBY)
@@ -104,7 +111,19 @@
 
     </select>
 
+    <select id="findMovementsCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM
+        (SELECT ID, TYPE, AMOUNT, EXECUTEDBY, EXECUTEDAT, NOTE, CATEGORYID, ACCOUNTID,updatedat
+        FROM MOVEMENTS
+        <include refid="movementsFilter" />
+        ORDER BY EXECUTEDAT DESC
+        ) AS mov
+        Left JOIN USERS  ON (USERS.USERNAME = mov.EXECUTEDBY)
+        Left JOIN ACCOUNTS  ON (ACCOUNTS.ID = mov.ACCOUNTID)
+        LEFT JOIN CATEGORIES ON (CATEGORIES.ID = mov.CATEGORYID)
 
+    </select>
     <select id="calculateSummaryMovements" resultMap="movementSummaryMap">
         select
           categoryId as categoryId,

@@ -1,6 +1,7 @@
 package it.italiancoders.mybudget.dao.movement;
 
 import it.italiancoders.mybudget.model.api.Movement;
+import it.italiancoders.mybudget.model.api.Page;
 import it.italiancoders.mybudget.model.api.mybatis.MovementSummaryResultType;
 
 import javax.validation.Valid;
@@ -14,4 +15,5 @@ public interface MovementDao {
     List<MovementSummaryResultType> calculateSummaryMovements(String accountId, Date date);
     void updateMovement(Movement movement);
     void deleteMovement(String movementId);
+    Page<Movement> findMovements(String accountId, Integer year, Integer month, Integer day, String user, Integer page);
 }

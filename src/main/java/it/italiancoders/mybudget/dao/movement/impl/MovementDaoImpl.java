@@ -5,10 +5,13 @@ import it.italiancoders.mybudget.dao.category.CategoryDao;
 import it.italiancoders.mybudget.dao.movement.MovementDao;
 import it.italiancoders.mybudget.model.api.Account;
 import it.italiancoders.mybudget.model.api.Movement;
+import it.italiancoders.mybudget.model.api.Page;
 import it.italiancoders.mybudget.model.api.mybatis.MovementSummaryResultType;
+import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import javax.validation.Valid;
@@ -22,6 +25,9 @@ public class MovementDaoImpl extends SqlSessionDaoSupport implements MovementDao
 
     @Autowired
     AccountDao accountDao;
+
+    @Value("${paginationSize}")
+    private Integer pageSize;
 
     @Override
     @Autowired
@@ -112,5 +118,25 @@ public class MovementDaoImpl extends SqlSessionDaoSupport implements MovementDao
         params.put("id", movementId);
         getSqlSession().delete("it.italiancoders.mybudget.dao.Movement.deleteMovement", params);
 
+    }
+
+    @Override
+    public Page<Movement> findMovements(String accountId, Integer year, Integer month, Integer day, String user, Integer page) {
+        Map<String,Object> params = new HashMap<>();
+        params.put("accountId", accountId);
+        params.put("month", month);
+        params.put("year", year);
+        params.put("day", day);
+        params.put("user", user);
+        List<Movement> result = new ArrayList<>();
+
+        Integer count = getSqlSession().selectOne("it.italiancoders.mybudget.dao.Movement.findMovementsCount", params);
+
+        if(count > 0){
+            RowBounds rowBounds =new RowBounds(page * pageSize, pageSize);
+            result = getSqlSession().selectList("it.italiancoders.mybudget.dao.Movement.findMovements", params, rowBounds);
+
+        }
+        return new Page<Movement>(result, page, pageSize, count);
     }
 }

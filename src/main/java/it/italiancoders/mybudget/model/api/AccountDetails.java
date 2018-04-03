@@ -36,7 +36,8 @@ public class AccountDetails  extends Account{
     @JsonProperty("lastMovements")
     private List<Movement> lastMovements;
 
-
+    @JsonProperty("members")
+    private List<User> members;
 
     public AccountDetails(Account account){
         this.setId(account.getId());

@@ -14,6 +14,23 @@
 
     </resultMap>
 
+    <resultMap id="memberMap" type="it.italiancoders.mybudget.model.api.User">
+        <result property="username" column="username"/>
+        <result property="alias" column="alias"/>
+    </resultMap>
+
+
+    <select id="findAccountMembers" resultMap="memberMap">
+        select USERS.USERNAME as username,
+               USERS.ALIAS as alias
+        FROM PUBLIC.ACCOUNTS
+        INNER JOIN PUBLIC.USER_ACCOUNT ON (USER_ACCOUNT.ID_ACCOUNT = ACCOUNTS.ID)
+        INNER JOIN PUBLIC.USERS ON (USER_ACCOUNT.ID_USER = USERS.USERNAME)
+        <where>
+            ACCOUNTS.id= #{accountId}
+        </where>
+
+    </select>
 
     <select id="findAccounts" resultMap="accountMap">
             select id AS id,

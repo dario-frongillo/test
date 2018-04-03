@@ -58,6 +58,14 @@ public class AccountDaoImpl extends SqlSessionDaoSupport implements AccountDao {
 
     }
 
+    @Override
+    public List<User> findAccountMembers(String accountId) {
+        Map<String,Object> params = new HashMap<>();
+        params.put("accountId",accountId);
+
+        return  getSqlSession().selectList("it.italiancoders.mybudget.dao.Account.findAccountMembers",params);
+    }
+
     private List<Account> findAccounts(Map<String,Object> params){
         List<Account> accounts = getSqlSession().selectList("it.italiancoders.mybudget.dao.Account.findAccounts",params);
 

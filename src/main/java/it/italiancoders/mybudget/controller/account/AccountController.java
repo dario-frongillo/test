@@ -11,6 +11,7 @@ import it.italiancoders.mybudget.model.api.mybatis.MovementSummaryResultType;
 import it.italiancoders.mybudget.service.account.AccountManager;
 import it.italiancoders.mybudget.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -68,6 +69,8 @@ public class AccountController {
         Map<String, Double> expenseMap = new HashMap<>();
         Map<String, Double> incomingMap = new HashMap<>();
 
+        List<User> members = accountDao.findAccountMembers(accountId);
+
         Double totalIncoming = 0.D;
         Double totalExpense = 0.D;
 
@@ -109,6 +112,7 @@ public class AccountController {
         retval.setLastMovements(movements);
         retval.setExpenseOverviewMovement(expenseMap);
         retval.setIncomingOverviewMovement(incomingMap);
+        retval.setMembers(members);
         return ResponseEntity.ok(retval);
     }
 
@@ -236,5 +240,21 @@ public class AccountController {
         accountManager.deleteMovement(movementId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @RequestMapping(value = "protected/v1/accounts/{accountId}/movements", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> getMovements( @PathVariable  String accountId,
+                                           @RequestParam(name = "year",required = true) Integer year,
+                                           @RequestParam(name = "month",required = true) Integer month,
+                                           @RequestParam(name = "day",required = false) Integer day,
+                                           @RequestParam(name = "user",required = false)String user,
+                                           @RequestParam(name = "page",required = true) Integer page
+
+                                           ) throws Exception {
+
+        Page<Movement> movements = movementDao.findMovements(accountId, year, month, day, user, page);
+
+        return ResponseEntity.ok(movements);
+
     }
 }

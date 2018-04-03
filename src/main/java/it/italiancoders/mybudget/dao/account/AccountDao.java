@@ -1,6 +1,7 @@
 package it.italiancoders.mybudget.dao.account;
 
 import it.italiancoders.mybudget.model.api.Account;
+import it.italiancoders.mybudget.model.api.User;
 
 import java.util.List;
 
@@ -16,5 +17,7 @@ public interface AccountDao {
     Account findById(String id, String username);
 
     void solveTitle(Account account);
+
+    List<User> findAccountMembers(String accountId);
 
 }
