@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.Date;
 import java.util.UUID;
 
@@ -51,6 +52,39 @@ public class AccountManagerImpl implements AccountManager {
         }
 
         movementDao.inserMovement(movement);
+
+    }
+
+    @Override
+    public void updateMovement(@Valid Movement movement, User currentUser) {
+        if(movement.getExecutedBy() == null){
+            movement.setExecutedBy(currentUser);
+        }
+
+        if(movement.getExecutedAt() == null){
+            movement.setExecutedAt(DateUtils.getUnixTime(new Date()));
+        }
+
+        movement.setUptadedAt(DateUtils.getUnixTime(new Date()));
+
+        if(movement.getCategory() == null){
+            switch (movement.getType()){
+                case Expense:
+                    movement.setCategory(Category.newBuilder().id(defaultExpenseCategory).build());
+                    break;
+                case Incoming:
+                    movement.setCategory(Category.newBuilder().id(defaultIncomingCategory).build());
+                    break;
+            }
+        }
+
+        movementDao.updateMovement(movement);
+
+    }
+
+    @Override
+    public void deleteMovement(String movementId) {
+        movementDao.deleteMovement(movementId);
 
     }
 }

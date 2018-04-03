@@ -89,6 +89,9 @@
                 AND exec_year= #{year}
             </if>
 
+            <if test="movementId != null">
+                AND id= #{movementId}
+            </if>
         </where>
         ORDER BY EXECUTEDAT DESC
         ) AS mov
@@ -137,5 +140,23 @@
           (#{id}, #{type},#{amount},#{username},#{executedAt},#{note},#{categoryId}, #{accountId})
     </insert>
 
+    <update id="updateMovement" >
+        UPDATE  PUBLIC.MOVEMENTS
+         SET TYPE = #{type},
+             AMOUNT = #{amount},
+             EXECUTEDBY = #{username},
+             EXECUTEDAT = #{executedAt},
+             NOTE = #{note},
+             CATEGORYID = #{categoryId} ,
+             ACCOUNTID = #{accountId}
+        WHERE
+             ID = #{id}
+    </update>
+
+    <delete id="deleteMovement" >
+        delete from  PUBLIC.MOVEMENTS
+        WHERE
+        ID = #{id}
+    </delete>
 
 </mapper>

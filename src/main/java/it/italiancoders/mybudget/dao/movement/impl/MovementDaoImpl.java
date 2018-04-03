@@ -11,6 +11,7 @@ import org.mybatis.spring.support.SqlSessionDaoSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.validation.Valid;
 import java.util.*;
 
 @Repository
@@ -46,6 +47,16 @@ public class MovementDaoImpl extends SqlSessionDaoSupport implements MovementDao
     public void inserMovement(Movement movement) {
         Map<String,Object> params = toHashMap(movement);
         getSqlSession().insert("it.italiancoders.mybudget.dao.Movement.insertMovement", params);
+
+    }
+
+    @Override
+    public Movement findMovement(String accountId, String id) {
+        Map<String,Object> params = new HashMap<>();
+        params.put("accountId", accountId);
+        params.put("movementId", id);
+
+        return getSqlSession().selectOne("it.italiancoders.mybudget.dao.Movement.findMovements", params);
 
     }
 
@@ -86,5 +97,20 @@ public class MovementDaoImpl extends SqlSessionDaoSupport implements MovementDao
 
         List<MovementSummaryResultType> movementSummaryResultTypes = getSqlSession().selectList("it.italiancoders.mybudget.dao.Movement.calculateSummaryMovements", params);
         return movementSummaryResultTypes;
+    }
+
+    @Override
+    public void updateMovement(Movement movement) {
+        Map<String,Object> params = toHashMap(movement);
+        getSqlSession().update("it.italiancoders.mybudget.dao.Movement.updateMovement", params);
+
+    }
+
+    @Override
+    public void deleteMovement(String movementId) {
+        Map<String,Object> params = new HashMap<>();
+        params.put("id", movementId);
+        getSqlSession().delete("it.italiancoders.mybudget.dao.Movement.deleteMovement", params);
+
     }
 }

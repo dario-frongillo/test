@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.validation.constraints.Min;
+
 @Builder(builderMethodName = "newBuilder")
 @Getter
 @Setter
@@ -22,6 +24,7 @@ public class Movement {
 
     @JsonProperty("amount")
     @NonNull
+    @Min(value = 0L)
     private Double amount;
 
     @JsonProperty("executedBy")

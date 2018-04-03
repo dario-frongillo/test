@@ -97,7 +97,7 @@ public class AccountController {
 
 
 
-        List<Movement> movements = movementDao.findLastMovements(accountId,new Date(), 10);
+        List<Movement> movements = movementDao.findLastMovements(accountId,new Date(), 20);
 
 
         AccountDetails retval =new AccountDetails(myAccount);
@@ -124,6 +124,18 @@ public class AccountController {
 
         Account myAccount = accountDao.findById(accountId, currentUser.getUsername());
 
+        if(movement.getExecutedBy() != null && movement.getExecutedBy().getUsername()!= null){
+            myAccount = accountDao.findById(accountId, movement.getExecutedBy().getUsername());
+
+            if(myAccount == null){
+                throw new RestException(HttpStatus.BAD_REQUEST,
+                        messageSource.getMessage("AccountController.postMovementFailed",null, locale),
+                        messageSource.getMessage("AccountController.userNotEnabled",new Object[]{accountId,movement.getExecutedBy().getUsername()}, locale),
+                        0);            }
+
+        }
+
+
         if(myAccount == null){
             throw new NoSuchEntityException(messageSource.getMessage("Generic.notFound",new Object[]{"Account"}, locale));
         }
@@ -131,7 +143,7 @@ public class AccountController {
         if(movement.getCategory() != null && movement.getCategory().getId() != null){
             Category category = categoryDao.findCategoryByIdAndAccount(movement.getCategory().getId(), accountId);
             if(category == null){
-                throw new RestException(HttpStatus.BAD_REQUEST,messageSource.getMessage("AccountController.postMovementFailed",null,locale),messageSource.getMessage("AccountController.postMovementFailed.categoryNotFound",null,locale),0);
+                throw new RestException(HttpStatus.BAD_REQUEST,messageSource.getMessage("AccountController.postMovementFailed",null,locale),messageSource.getMessage("AccountController.categoryNotFound",null,locale),0);
             }
         }
 
@@ -140,5 +152,89 @@ public class AccountController {
         return ResponseEntity.noContent().build();
     }
 
+    @RequestMapping(value = "protected/v1/accounts/{accountId}/movements/{movementId}", method = RequestMethod.PUT, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> updateMovement(@PathVariable  String accountId,
+                                            @PathVariable  String movementId,
+                                            @RequestBody @Valid Movement movement) throws Exception {
 
+        Authentication auth =SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+
+        Locale locale = LocaleContextHolder.getLocale();
+        Account myAccount = accountDao.findById(accountId, currentUser.getUsername());
+
+        if(movement.getExecutedBy() != null && movement.getExecutedBy().getUsername()!= null){
+            myAccount = accountDao.findById(accountId, movement.getExecutedBy().getUsername());
+
+            if(myAccount == null){
+                throw new RestException(HttpStatus.BAD_REQUEST,
+                        messageSource.getMessage("AccountController.updateMovementFailed",null, locale),
+                        messageSource.getMessage("AccountController.userNotEnabled",new Object[]{accountId,movement.getExecutedBy().getUsername()}, locale),
+                        0);
+            }
+
+        }
+
+        if(myAccount == null){
+            throw new NoSuchEntityException(messageSource.getMessage("Generic.notFound",new Object[]{"Movimento"}, locale));
+        }
+
+        if(movement.getCategory() != null && movement.getCategory().getId() != null){
+            Category category = categoryDao.findCategoryByIdAndAccount(movement.getCategory().getId(), accountId);
+            if(category == null){
+                throw new RestException(HttpStatus.BAD_REQUEST,messageSource.getMessage("AccountController.updateMovementFailed",null,locale),messageSource.getMessage("AccountController.categoryNotFound",null,locale),0);
+            }
+        }
+
+        Movement previousValue = movementDao.findMovement(accountId, movementId);
+        if(previousValue == null){
+            throw new NoSuchEntityException(messageSource.getMessage("Generic.notFound",new Object[]{"Movimento"}, locale));
+
+        }
+
+        if(!previousValue.getAccount().getId().equals(accountId)){
+            throw new NoSuchEntityException(messageSource.getMessage("Generic.notFound",new Object[]{"Movimento"}, locale));
+
+        }
+
+        movement.setAccount(myAccount);
+        movement.setId(movementId);
+        accountManager.updateMovement(movement, currentUser);
+
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @RequestMapping(value = "protected/v1/accounts/{accountId}/movements/{movementId}", method = RequestMethod.DELETE, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<?> deleteMovement(@PathVariable  String accountId,
+                                            @PathVariable  String movementId
+    ) throws Exception {
+
+        Authentication auth =SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+
+        Locale locale = LocaleContextHolder.getLocale();
+        Account myAccount = accountDao.findById(accountId, currentUser.getUsername());
+
+
+        if(myAccount == null){
+            throw new NoSuchEntityException(messageSource.getMessage("Generic.notFound",new Object[]{"Movimento"}, locale));
+        }
+
+        Movement previousValue = movementDao.findMovement(accountId, movementId);
+        if(previousValue == null){
+            throw new NoSuchEntityException(messageSource.getMessage("Generic.notFound",new Object[]{"Movimento"}, locale));
+
+        }
+
+        if(!previousValue.getAccount().getId().equals(accountId)){
+            throw new NoSuchEntityException(messageSource.getMessage("Generic.notFound",new Object[]{"Movimento"}, locale));
+
+        }
+
+
+        accountManager.deleteMovement(movementId);
+
+        return ResponseEntity.noContent().build();
+    }
 }

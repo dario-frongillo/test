@@ -83,9 +83,9 @@ CREATE OR REPLACE FUNCTION stampMovement() RETURNS trigger AS $stampMovement$
         	NEW.CREATEDAT := trunc(extract(epoch from now() at time zone 'utc'));
         END IF;
         NEW.UPDATEDAT := trunc(extract(epoch from now() at time zone 'utc'));
-        NEW.EXEC_DAY = EXTRACT(DAY from (to_timestamp(1522413159)::timestamp with time zone at time zone 'utc'));
-        NEW.EXEC_MONTH = EXTRACT(MONTH from (to_timestamp(1522413159)::timestamp with time zone at time zone 'utc'));
-        NEW.EXEC_YEAR = EXTRACT(YEAR from (to_timestamp(1522413159)::timestamp with time zone at time zone 'utc'));
+        NEW.EXEC_DAY = EXTRACT(DAY from (to_timestamp(NEW.EXECUTEDAT)::timestamp with time zone at time zone 'utc'));
+        NEW.EXEC_MONTH = EXTRACT(MONTH from (to_timestamp(NEW.EXECUTEDAT)::timestamp with time zone at time zone 'utc'));
+        NEW.EXEC_YEAR = EXTRACT(YEAR from (to_timestamp(NEW.EXECUTEDAT)::timestamp with time zone at time zone 'utc'));
         RETURN NEW;
     END;
 $stampMovement$ LANGUAGE plpgsql;
