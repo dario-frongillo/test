@@ -248,6 +248,7 @@ public class AccountController {
                                            @RequestParam(name = "month",required = true) Integer month,
                                            @RequestParam(name = "day",required = false) Integer day,
                                            @RequestParam(name = "user",required = false)String user,
+                                           @RequestParam(name = "category", required = false) String categoryId,
                                            @RequestParam(name = "page",required = true) Integer page
 
                                            ) throws Exception {
