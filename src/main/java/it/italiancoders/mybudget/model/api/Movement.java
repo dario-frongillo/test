@@ -45,5 +45,9 @@ public class Movement {
     @JsonIgnore
     private Account account;
 
+    @JsonIgnore
+    @Builder.Default
+    private boolean isAuto = false;
+
 
 }

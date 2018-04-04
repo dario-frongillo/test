@@ -40,6 +40,22 @@
 
     </resultMap>
 
+    <resultMap id="autoMovementMap" type="it.italiancoders.mybudget.model.api.AutoMovementSettings">
+        <result property="id" column="id"/>
+        <result property="movementDate" column="movementDate"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="start" column="fromDate"/>
+        <result property="end" column="toDate"/>
+        <result property="frequency" column="frequency" javaType="it.italiancoders.mybudget.model.api.ScheduledFrequencyEnum" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result property="account.id" column="account"/>
+        <result property="amount" column="amount"/>
+        <result property="category.id" column="category"/>
+        <result property="type" column="movementType" javaType="it.italiancoders.mybudget.model.api.MovementType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result property="user.username" column="username"/>
+
+    </resultMap>
+
     <sql id="movementsFilter">
         <where>
             1 = 1
@@ -159,9 +175,9 @@
 
     <insert id="insertMovement" >
         INSERT INTO  PUBLIC.MOVEMENTS
-          (ID, TYPE, AMOUNT, EXECUTEDBY, EXECUTEDAT, NOTE, CATEGORYID, ACCOUNTID)
+          (ID, TYPE, AMOUNT, EXECUTEDBY, EXECUTEDAT, NOTE, CATEGORYID, ACCOUNTID, is_auto)
         VALUES
-          (#{id}, #{type},#{amount},#{username},#{executedAt},#{note},#{categoryId}, #{accountId})
+          (#{id}, #{type},#{amount},#{username},#{executedAt},#{note},#{categoryId}, #{accountId} ,#{isAuto})
     </insert>
 
     <update id="updateMovement" >
@@ -182,5 +198,56 @@
         WHERE
         ID = #{id}
     </delete>
+
+
+
+    <select id="findAutoMovementToGenerate" resultMap="autoMovementMap">
+        SELECT
+        AUTO_MOVEMENT_SETTINGS.ID as id,
+        AUTO_MOVEMENT_SETTINGS.NAME as name,
+        AUTO_MOVEMENT_SETTINGS.DESCRIPTION as description,
+        AUTO_MOVEMENT_SETTINGS.FROM_DATE as fromDate,
+        AUTO_MOVEMENT_SETTINGS.END_DATE as toDate,
+        AUTO_MOVEMENT_SETTINGS.FREQUENCY as frequency ,
+        AUTO_MOVEMENT_SETTINGS.ACCOUNT as account,
+        AUTO_MOVEMENT_SETTINGS.AMOUNT as amount,
+        AUTO_MOVEMENT_SETTINGS.CATEGORYID as category,
+        AUTO_MOVEMENT_SETTINGS.TYPE as movementType,
+        unixTimePlusFrequency(AUTO_MOVEMENT_SETTINGS.FROM_DATE, AUTO_MOVEMENT_SETTINGS.FREQUENCY,AUTO_MOVEMENT_SETTINGS.multiplier) movementDate,
+        AUTO_MOVEMENT_SETTINGS.username  as username
+        FROM PUBLIC.AUTO_MOVEMENT_SETTINGS
+        INNER JOIN PUBLIC.ACCOUNTS ON (AUTO_MOVEMENT_SETTINGS.ACCOUNT = ACCOUNTS.ID)
+        <where>
+            --data fine infinito o maggior del movimento da generare
+            (END_DATE IS NULL OR END_DATE >= unixTimePlusFrequency(AUTO_MOVEMENT_SETTINGS.FROM_DATE, AUTO_MOVEMENT_SETTINGS.FREQUENCY,AUTO_MOVEMENT_SETTINGS.multiplier))
+            AND
+            --non ha ancora girato oggi per i riavvii
+            <![CDATA[
+                (last_exec is null OR last_exec < #{inDate})
+            ]]>
+            AND
+            --
+            <![CDATA[
+            unixTimePlusFrequency(AUTO_MOVEMENT_SETTINGS.FROM_DATE, AUTO_MOVEMENT_SETTINGS.FREQUENCY,AUTO_MOVEMENT_SETTINGS.multiplier) <= #{inDate}
+            ]]>
+        </where>
+
+    </select>
+
+
+    <update id="setExecutedMovementSettings" >
+        UPDATE  PUBLIC.AUTO_MOVEMENT_SETTINGS
+           SET  multiplier = multiplier+1,
+                last_exec = #{inDate}
+        WHERE   id=  #{id}
+    </update>
+
+    <insert id="insertMovementSettings" >
+        INSERT INTO  PUBLIC.AUTO_MOVEMENT_SETTINGS
+          (id,name,description,FROM_DATE,END_DATE,FREQUENCY, ACCOUNT, AMOUNT,CATEGORYID, TYPE,username, multiplier)
+        VALUES
+          (#{id}, #{name},#{description},#{fromDate},#{toDate},#{frequency}, #{account},  #{amount},  #{category}, #{movementType},  #{username},1 )
+    </insert>
+
 
 </mapper>

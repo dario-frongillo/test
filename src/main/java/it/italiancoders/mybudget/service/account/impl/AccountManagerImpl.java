@@ -1,6 +1,7 @@
 package it.italiancoders.mybudget.service.account.impl;
 
 import it.italiancoders.mybudget.dao.movement.MovementDao;
+import it.italiancoders.mybudget.model.api.AutoMovementSettings;
 import it.italiancoders.mybudget.model.api.Category;
 import it.italiancoders.mybudget.model.api.Movement;
 import it.italiancoders.mybudget.model.api.User;
@@ -9,9 +10,11 @@ import it.italiancoders.mybudget.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -86,5 +89,41 @@ public class AccountManagerImpl implements AccountManager {
     public void deleteMovement(String movementId) {
         movementDao.deleteMovement(movementId);
 
+    }
+
+
+
+
+
+    @Override
+    public void generateAutoMovement(Date inDate) {
+        List<AutoMovementSettings> autoMovementSettingsList = movementDao.findAutoMovementToGenerate(inDate);
+
+        if(autoMovementSettingsList == null || autoMovementSettingsList.size() == 0){
+            return;
+        }
+
+        autoMovementSettingsList.forEach(autoMovementSettings -> {
+            Movement movement = Movement.newBuilder()
+                                    .id(UUID.randomUUID().toString())
+                                    .type(autoMovementSettings.getType())
+                                    .amount(autoMovementSettings.getAmount())
+                                    .executedBy(autoMovementSettings.getUser())
+                                    .executedAt(autoMovementSettings.getMovementDate())
+                                    .account(autoMovementSettings.getAccount())
+                                    .category(autoMovementSettings.getCategory())
+                                    .isAuto(true)
+                                    .build();
+
+            insertAutoMovement(movement, autoMovementSettings, inDate);
+        });
+    }
+
+    @Override
+    @Transactional
+    public void insertAutoMovement(Movement movement, AutoMovementSettings autoMovementSettings, Date execDate) {
+
+        movementDao.inserMovement(movement);
+        movementDao.setExecutedMovementSettings(autoMovementSettings, execDate);
     }
 }

@@ -4,9 +4,11 @@ import it.italiancoders.mybudget.dao.account.AccountDao;
 import it.italiancoders.mybudget.dao.category.CategoryDao;
 import it.italiancoders.mybudget.dao.movement.MovementDao;
 import it.italiancoders.mybudget.model.api.Account;
+import it.italiancoders.mybudget.model.api.AutoMovementSettings;
 import it.italiancoders.mybudget.model.api.Movement;
 import it.italiancoders.mybudget.model.api.Page;
 import it.italiancoders.mybudget.model.api.mybatis.MovementSummaryResultType;
+import it.italiancoders.mybudget.utils.DateUtils;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
@@ -46,6 +48,7 @@ public class MovementDaoImpl extends SqlSessionDaoSupport implements MovementDao
         params.put("note",  movement.getNote());
         params.put("accountId", movement.getAccount().getId());
         params.put("categoryId", movement.getCategory().getId());
+        params.put("isAuto", movement.isAuto());
         return params;
     }
 
@@ -140,5 +143,20 @@ public class MovementDaoImpl extends SqlSessionDaoSupport implements MovementDao
 
         }
         return new Page<Movement>(result, page, pageSize, count);
+    }
+
+    @Override
+    public List<AutoMovementSettings> findAutoMovementToGenerate(Date inDate) {
+        Map<String,Object> params = new HashMap<>();
+        params.put("inDate", DateUtils.getUnixTime(inDate));
+        return getSqlSession().selectList("it.italiancoders.mybudget.dao.Movement.findAutoMovementToGenerate", params);
+    }
+
+    @Override
+    public void setExecutedMovementSettings(AutoMovementSettings autoMovementSettings, Date execDate) {
+        Map<String,Object> params = new HashMap<>();
+        params.put("inDate", DateUtils.getUnixTime(execDate));
+        params.put("id", autoMovementSettings.getId());
+        getSqlSession().update("it.italiancoders.mybudget.dao.Movement.setExecutedMovementSettings", params);
     }
 }
